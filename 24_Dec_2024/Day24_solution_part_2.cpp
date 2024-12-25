@@ -366,21 +366,14 @@ NAoc__MR::TResult day24Part2(std::shared_ptr<std::istream> inputStream)
    std::vector<NodeSetRef> candidatesBack;
    candidatesBack.reserve(xBitNumer+1U);
    {
-      // NodeSetRef cumulativeCandidates;
-
       NodeSetRef nodesXY;
       transformContainer(nodesXY, initTrigger, [&graphGates = std::as_const(graphGates)](auto it)
                                                {return graphGates.refNode(it);} );
 
       for(std::size_t i = 0; i <= xBitNumer; ++i){
          auto zIt = zIts[i];
-         auto [sources, noLoop_] = graphGates.getReachablesTo(zIt);
+         auto [sources, noLoop_] = graphGates.getObservablesTo(zIt);
          sources.insert(graphGates.refNode(zIt));
-
-         // exclude all the ones in previous-indexes candidates.
-         // reduceContainer(sources, cumulativeCandidates);
-
-         // cumulativeCandidates.merge(NodeSetRef{sources});
 
          reduceContainer(sources, nodesXY); // avoid swapping x and y
          candidatesBack.push_back(std::move(sources));
@@ -457,7 +450,7 @@ NAoc__MR::TResult day24Part2(std::shared_ptr<std::istream> inputStream)
    SetIt incrementalGates8;
    std::vector<std::size_t> debugMissingChecks(xBitNumer+1U, 0U);
 
-   constexpr auto NumGatesToSearch = 8U;
+   const auto NumGatesToSearch = IsShortTest? 2U : 8U;
 
    f_findCouples = [&](std::size_t iBitStart){
       {
@@ -591,7 +584,7 @@ NAoc__MR::TResult day24Part2(std::shared_ptr<std::istream> inputStream)
    std::sort(names.begin(), names.end());
 
    std::cout << "\nNumber of lines: " << lineCount << std::endl;
-   std::cout << "\nResult P2: " << getString(names,",") << std::endl;
+   std::cout << "\nResult P2: " << (okRecursion? getString(names,",") : "not found") << std::endl;
    std::cout << std::endl;
 
    return names.size();
