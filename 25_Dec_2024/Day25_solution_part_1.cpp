@@ -49,13 +49,13 @@ NAoc__MR::TResult day25Part1(std::shared_ptr<std::istream> inputStream)
                throw std::invalid_argument(getString(" ", msgLine, "unexpected non-uniform element-extension:", field.dimY(), "different from", Y));
             }
 
-            if (field(0,0) == Field2D::WallTile){
+            if (auto p = field[0].find(Field2D::FreeTile); p == std::string::npos){
                if (auto p = field[0].find(Field2D::FreeTile); p != std::string::npos){
                   throw std::invalid_argument(msgLine + "unexpected non-uniform line: " + line);
                }
                locks.push_back(std::move(field));
             } else{
-               if (auto p = field[0].find(Field2D::WallTile); p != std::string::npos){
+               if (auto p = field[Y-1].find(Field2D::FreeTile); p != std::string::npos){
                   throw std::invalid_argument(msgLine + "unexpected non-uniform line: " + line);
                }
                keys.push_back(std::move(field));

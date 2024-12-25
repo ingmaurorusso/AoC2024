@@ -280,23 +280,23 @@ NAoc__MR::TResult day24Part2(std::shared_ptr<std::istream> inputStream)
       std::unordered_set<std::size_t> bit_problems;
       for(int b = 0; b <= iBit; ++b){
          if (b < xBitNumer){
-            auto [z1, okConnections] = test(maskSingle, 0U);
+            auto [z1, noLoop] = test(maskSingle, 0U);
             auto [z2, ok_] = test(0U, maskSingle);
 
-            if ( (!okConnections) ||
+            if ( (!noLoop) ||
                  (z1 != maskSingle) || (z2  != maskSingle) ){
-               return std::pair(false,okConnections);
+               return false;
             }
          }
 
          if (b > 0){
             // another test is for carries
-            auto [z3, okConnections] = test(maskOnes, 1U);
+            auto [z3, noLoop] = test(maskOnes, 1U);
             auto [z4, ok___] = test(1U, maskOnes);
 
-            if ( (!okConnections) ||
+            if ( (!noLoop) ||
                  (z3 != maskSingle) || (z4 != maskSingle) ){
-               return std::pair(false,okConnections);
+               return false;
             }
 
             (maskOnes <<= 1) |= 1;
@@ -305,7 +305,7 @@ NAoc__MR::TResult day24Part2(std::shared_ptr<std::istream> inputStream)
          maskSingle <<= 1;
       }
 
-      return std::pair(true,true);
+      return true;
    };
 
 
@@ -331,8 +331,8 @@ NAoc__MR::TResult day24Part2(std::shared_ptr<std::istream> inputStream)
       return true;
    };
 
-   const auto finalTest = [&extremeTest, xBitNumer](){
-      for(std::size_t iFinalCheck = 0; iFinalCheck < xBitNumer; iFinalCheck += 2){
+   const auto finalTest = [&extremeTest](std::size_t upTo){
+      for(std::size_t iFinalCheck = 0; iFinalCheck < upTo; iFinalCheck += 2){
          if (!extremeTest(iFinalCheck, iFinalCheck+6)) return false;
       }
       return true;
@@ -340,7 +340,7 @@ NAoc__MR::TResult day24Part2(std::shared_ptr<std::istream> inputStream)
 
    //if (IsShortTest) return 0;
 
-   if (finalTest()){
+   if (finalTest(xBitNumer+1U)){
       std::cout << "Net already working! \n";
       return 0;
    }
@@ -496,37 +496,49 @@ NAoc__MR::TResult day24Part2(std::shared_ptr<std::istream> inputStream)
                      &swappedGates, NumGatesToSearch,
                      &gatesConn, &gatesConnFw,
                      xBitNumer,
-                     &fullTest, &finalTest,
+                     &fullTest, &extremeTest, &finalTest,
                      &candidatesBack = std::as_const(candidatesBack),
                      &candidatesFront = std::as_const(candidatesFront),
                      &cItIdxs = std::as_const(cItIdxs) ](std::size_t iBitStart){
       {
-         bool fullyOk = false;
+         bool endNow = false, okTest = true;
 
          bool alreadySize = (swappedGates.size() >= NumGatesToSearch);
          if (iBitStart > xBitNumer){
-            fullyOk = true;
+            endNow = true;
          }
 
          if (alreadySize){
-            fullyOk = fullTest(xBitNumer).first;
+            endNow = true;
+            okTest = fullTest(xBitNumer); // fast easy test.
          }
 
-         if (fullyOk){
-            fullyOk = finalTest();
+         if (endNow){
+            if (okTest){
+               okTest = finalTest(xBitNumer+1U);
+            }
 
-            return std::pair( SetIt{}, fullyOk );
+            return std::pair( SetIt{}, okTest );
          }
       }
 
       //auto debugN = candidatesBack[iBitStart].size() * candidatesBack[iBitStart].size();
       //debugMissingChecks[iBitStart] = debugN;
 
-      if (fullTest(iBitStart).first){
+      if (fullTest(iBitStart) && extremeTest( std::max(iBitStart,std::size_t{3U})-3U, iBitStart )){
          // first try not to change anything...
          auto [setRes, ok] = (f_findCouples)(iBitStart+1U);
          if (ok){
             return std::pair(std::move(setRes),true);
+         }
+
+         constexpr bool useHeuristic = false;
+
+         if constexpr(useHeuristic){
+            if (finalTest(iBitStart)){
+               // guess there is no other useful combination
+               return std::pair(SetIt{},false);
+            }
          }
       }
       //... then try switching couples.
@@ -579,7 +591,7 @@ NAoc__MR::TResult day24Part2(std::shared_ptr<std::istream> inputStream)
             fw21.insert(cIt1);
             fw22.insert(cIt1);
 
-            if (fullTest(iBitStart).first){
+            if (fullTest(iBitStart) && extremeTest( std::max(iBitStart,std::size_t{3U})-3U, iBitStart )){
                swappedGates.insert(cIt1);
                swappedGates.insert(cIt2);
 

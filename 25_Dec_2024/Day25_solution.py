@@ -125,18 +125,69 @@ def doJob(inputText):
             lines = lines[:-1]
     print(f"Number of lines {len(lines)}");
 
-    while('' in lines):
-        # print(f'an empty line: idx {lines.index('')+1}') allowed for this problem
-        lines.remove('')
+    # empty lines needed in this problem
+    #while('' in lines):
+    #    # print(f'an empty line: idx {lines.index('')+1}') allowed for this problem
+    #    lines.remove('')
 
     if len(lines) == 0:
         print('No lines or only empty lines!')
         return
+    
+    lines.append('')
+
+    keys = []
+    locks = []
+
+    elem = []
+
+    for line in lines:
+        if (line == '') and (len(elem) > 0):
+            if elem[-1].find('.') != -1 :
+                locks.append(elem)
+            else:
+                keys.append(elem)
+
+            elem = []
+        else:
+            elem.append(line)
 
     # PART 1
 
+    if len(keys) == 0:
+        return 0
+
+    Y = len(keys[0])
+    X = len(keys[0][0])
+
     count1 = 0
     count2 = 0
+
+    for key in keys:
+        hsKey = []
+        for x in range(X):
+            hsKey.append(0)
+            for y in range(Y):
+                if key[Y-1 - y][x] == '#':
+                    hsKey[x] = y
+
+        for lock in locks:
+            hsLock = []
+            for x in range(X):
+                hsLock.append(0)
+                for y in range(Y):
+                    if lock[y][x] == '#':
+                        hsLock[x] = y
+
+
+            ok = True
+            for x in range(X):
+                if hsKey[x] + hsLock[x] + 2 > Y:
+                    ok = False
+                    break
+
+            if ok:
+                count1 += 1
 
     print(f"Result Part1: {count1}")
 
