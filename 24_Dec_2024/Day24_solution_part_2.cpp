@@ -4,6 +4,24 @@
 
 using namespace NAoc__MR;
 
+enum class BitsOp {OR, AND, XOR};
+
+MR__ENUM_MAP_BEGIN_EXPAND(BitsOp)(OR)(AND)MR__ENUM_MAP_END_EXPAND(XOR);
+
+inline auto bitOpToStr(BitsOp op){
+   auto s = std::string{MR__ENUM_GET_NAMEq(BitsOp, op)};
+   if (s.empty()){
+      throw std::runtime_error("inconsistent gate-operation");
+   }
+   return s;
+}
+
+inline auto bitOpFromStr(const std::string& s){
+   auto [e, ok] = MR__ENUM_GET_VALUE(BitsOp, s);
+   if (ok) return e;
+   
+   throw std::runtime_error("inconsistent gate-operation");
+}
 
 NAoc__MR::TResult day24Part2(std::shared_ptr<std::istream> inputStream)
 {
@@ -18,11 +36,21 @@ NAoc__MR::TResult day24Part2(std::shared_ptr<std::istream> inputStream)
    using It = decltype(wireValues)::iterator;
    using SetIt = std::unordered_set<It>;
 
-   enum class BitsOp {OR, AND, XOR};
-
    std::unordered_map<It, std::pair<BitsOp, std::pair<It,It>> > gatesConn;
 
    std::unordered_map<It, SetIt> gatesConnFw;
+
+   static const auto gateExtraction = [](const std::string& gate) -> std::vector<std::string> {
+      const auto forGate = split(gate, R"__(->)__", true);
+      if (forGate.size() != 2U) return std::vector<std::string>{};
+
+      const auto gateElems = split(forGate[0], R"__( )__", true);
+      if (gateElems.size() != 3U) return std::vector<std::string>{};
+
+      static_cast<void>(bitOpFromStr(gateElems[1])); // check
+
+      return std::vector{std::move(gateElems[0]), std::move(gateElems[1]), std::move(gateElems[2]), forGate[1]};
+   };
 
    while (true) {
       //  --- BEGIN LINE EXTRACTION ---
@@ -44,19 +72,28 @@ NAoc__MR::TResult day24Part2(std::shared_ptr<std::istream> inputStream)
       //  --- END LINE EXTRACTION ---
 
       //  --- BEGIN LINE CHECKS ---
-      if (auto it = std::find_if_not( line.cbegin(), line.cend(),
-                                      [](char ch){return true;} ) ; it != line.cend() ){
+      static_assert(__cplusplus > 202002L, "Use C++23 for std::string::contains, or disable the following line-check");
+
+      if (auto it = std::find_if_not( line.cbegin(), line.cend(), // needed C++23 for string::contains
+                                      [](char ch){return std::isalnum(ch) || (": ->"s.contains(ch));} ) ; it != line.cend() ){
          throw std::invalid_argument(msgLine + "unexpected char: " + std::string(1,*it));
       }
       //  --- END LINE CHECKS ---
 
       auto forWire = split(line, R"__(:)__", true);
       
-
       if (forWire.size() == 2){
-         wireValues[forWire[0]] = std::make_pair(true, !!getAllValues<TResult>(forWire[1])[0]);
+         auto values = getAllValues<TResult>(forWire[1]);
+         if ((values.size() != 1U) || (values[0] < 0U) || (values[0] > 1U)){
+            throw std::invalid_argument(msgLine + "unexpected part of wire value: '" + forWire[1] + "'");
+         }
+         wireValues[forWire[0]] = std::make_pair(true, !!values[0]);
       } else{
-         strGates.push_back(line);
+         if (gateExtraction(line).empty()){
+            throw std::invalid_argument(msgLine + "bad gate format");
+         }
+
+         strGates.push_back(std::move(line));
       }
    }
 
@@ -67,20 +104,13 @@ NAoc__MR::TResult day24Part2(std::shared_ptr<std::istream> inputStream)
    }
 
    for(const auto& strGate : strGates){
-      auto forGate = split(strGate, R"__(->)__", true);
+      auto gateAllElems = gateExtraction(strGate);
 
-      auto gateElems = split(forGate[0], R"__( )__", true);
+      BitsOp op = bitOpFromStr(gateAllElems[1]);
 
-      BitsOp op;
-      if (gateElems[1] == "XOR"){
-         op = BitsOp::XOR;
-      } else if (gateElems[1] == "AND"){
-         op = BitsOp::AND;
-      } else op = BitsOp::OR;
-
-      auto itOut = wireValues.find(forGate[1]);
-      auto itIn1 = wireValues.find(gateElems[0]);
-      auto itWin2 = wireValues.find(gateElems[2]);
+      auto itOut = wireValues.find(gateAllElems[3]);
+      auto itIn1 = wireValues.find(gateAllElems[0]);
+      auto itWin2 = wireValues.find(gateAllElems[2]);
 
       gatesConn[itOut] =
          std::make_pair(
@@ -109,11 +139,17 @@ NAoc__MR::TResult day24Part2(std::shared_ptr<std::istream> inputStream)
    zIts.reserve(allZ.size()); // == xBitNumer+1U in the real input
 
    {
+      checkResultExtension<TResult>(allZ.size());
+
       auto vName = "x"s;
       auto refIts = std::ref(xIts);
       for(int k = 0; k < 2; ++k){
          for(int b = 0; b < xBitNumer; ++b){
-            refIts.get().push_back(wireValues.find(vName + std::to_string(b/10) + std::to_string(b%10)));
+            auto itW = wireValues.find(vName + std::to_string(b/10) + std::to_string(b%10));
+            if (itW == wireValues.end()){
+               throw std::runtime_error("Missing intermediate bits for inputs");
+            }
+            refIts.get().push_back(itW);
          }
 
          vName = "y"s;
@@ -121,7 +157,11 @@ NAoc__MR::TResult day24Part2(std::shared_ptr<std::istream> inputStream)
       }
 
       for(int b = 0; b < allZ.size(); ++b){ // == xBitNumer+1U in the real input
-         zIts.push_back(wireValues.find("z"s + std::to_string(b/10) + std::to_string(b%10)));
+         auto itW = wireValues.find("z"s + std::to_string(b/10) + std::to_string(b%10));
+         if (itW == wireValues.end()){
+            throw std::runtime_error("Missing intermediate bits for inputs");
+         }
+         zIts.push_back(itW);
       }
    }
    
@@ -447,16 +487,23 @@ NAoc__MR::TResult day24Part2(std::shared_ptr<std::istream> inputStream)
    // look incrementally
    std::function<std::pair<SetIt,bool>(std::size_t)> f_findCouples;
 
-   SetIt incrementalGates8;
+   SetIt swappedGates;
    std::vector<std::size_t> debugMissingChecks(xBitNumer+1U, 0U);
 
    const auto NumGatesToSearch = IsShortTest? 2U : 8U;
 
-   f_findCouples = [&](std::size_t iBitStart){
+   f_findCouples = [ &f_findCouples,
+                     &swappedGates, NumGatesToSearch,
+                     &gatesConn, &gatesConnFw,
+                     xBitNumer,
+                     &fullTest, &finalTest,
+                     &candidatesBack = std::as_const(candidatesBack),
+                     &candidatesFront = std::as_const(candidatesFront),
+                     &cItIdxs = std::as_const(cItIdxs) ](std::size_t iBitStart){
       {
          bool fullyOk = false;
 
-         bool alreadySize = (incrementalGates8.size() >= NumGatesToSearch);
+         bool alreadySize = (swappedGates.size() >= NumGatesToSearch);
          if (iBitStart > xBitNumer){
             fullyOk = true;
          }
@@ -477,7 +524,7 @@ NAoc__MR::TResult day24Part2(std::shared_ptr<std::istream> inputStream)
 
       if (fullTest(iBitStart).first){
          // first try not to change anything...
-         auto [setRes, ok] = f_findCouples(iBitStart+1U);
+         auto [setRes, ok] = (f_findCouples)(iBitStart+1U);
          if (ok){
             return std::pair(std::move(setRes),true);
          }
@@ -488,34 +535,24 @@ NAoc__MR::TResult day24Part2(std::shared_ptr<std::istream> inputStream)
       for(auto node1It : candidatesBack[iBitStart]){
          auto cIt1 = *node1It;
          if ( // initTrigger.contains(cIt1) || // don't swap x and y -> avoided already during construction
-              incrementalGates8.contains(cIt1) ){ // avoid repeat some already swapped
+              swappedGates.contains(cIt1) ){ // avoid repeat some already swapped
             //debugMissingChecks[iBitStart] -= candidatesBack[iBitStart].size();
             continue;
          }
 
-         constexpr bool useFronAsSecondCandidates = true;
-
-         auto candidates2 = std::cref(candidatesBack);
-         if constexpr(useFronAsSecondCandidates){
-            candidates2 = std::cref(candidatesFront);
-         }
-
-         for(auto node2It : candidates2.get()[iBitStart]){
+         for(auto node2It : candidatesFront[iBitStart]){
             //debugMissingChecks[iBitStart]--;
 
             auto cIt2 = *node2It;
             if ( // initTrigger.contains(cIt2) || // don't swap x and y -> avoided already during construction
-                 incrementalGates8.contains(cIt2) ){ // avoid repeat some already swapped
+                 swappedGates.contains(cIt2) ){ // avoid repeat some already swapped
                continue;
             }
 
-            bool mix12 = true;
-            if constexpr(useFronAsSecondCandidates){
-               mix12 = candidatesBack[iBitStart].contains(node2It) &&
-                       candidatesFront[iBitStart].contains(node1It);
-            }
+            bool mix12 = candidatesBack[iBitStart].contains(node2It) &&
+                         candidatesFront[iBitStart].contains(node1It);
 
-            if (mix12 && (cItIdxs[cIt1] >= cItIdxs[cIt2])){
+            if (mix12 && (cItIdxs.find(cIt1)->second >= cItIdxs.find(cIt2)->second)){
                continue; // avoid uselessly double the number of tries
             }
 
@@ -543,8 +580,8 @@ NAoc__MR::TResult day24Part2(std::shared_ptr<std::istream> inputStream)
             fw22.insert(cIt1);
 
             if (fullTest(iBitStart).first){
-               incrementalGates8.insert(cIt1);
-               incrementalGates8.insert(cIt2);
+               swappedGates.insert(cIt1);
+               swappedGates.insert(cIt2);
 
                auto [setRes, ok] = f_findCouples(iBitStart+1U);
 
@@ -554,8 +591,8 @@ NAoc__MR::TResult day24Part2(std::shared_ptr<std::istream> inputStream)
                   return std::pair(std::move(setRes),true);
                } // else: swap-back
 
-               incrementalGates8.erase(cIt1);
-               incrementalGates8.erase(cIt2);
+               swappedGates.erase(cIt1);
+               swappedGates.erase(cIt2);
             }
 
             // restores
@@ -580,6 +617,11 @@ NAoc__MR::TResult day24Part2(std::shared_ptr<std::istream> inputStream)
    std::vector<std::string> names;
    if (okRecursion){
       transformContainer(names, gates8, [](auto it){return it->first;});
+   } else
+   if (!IsShortTest){
+      throw std::runtime_error(
+            "1) try use dynamic change of rechable/observable wires and/or \n"
+            "2) multiple swaps for each output-bit in f_findCouples" );
    }
    std::sort(names.begin(), names.end());
 

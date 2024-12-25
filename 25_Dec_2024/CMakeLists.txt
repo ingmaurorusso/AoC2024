@@ -1,12 +1,12 @@
 
 # set Day to get correct file names.
-set(DAY 24)
+set(DAY 25)
 
 #CMake minimum version
 cmake_minimum_required(VERSION 3.5.0)
 
 #C++ Standard version
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 20)
 
 add_compile_options(-fconcepts-diagnostics-depth=2)
 

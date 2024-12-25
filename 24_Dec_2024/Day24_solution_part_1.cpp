@@ -4,6 +4,24 @@
 
 using namespace NAoc__MR;
 
+enum class BitsOp {OR, AND, XOR};
+
+MR__ENUM_MAP_BEGIN_EXPAND(BitsOp)(OR)(AND)MR__ENUM_MAP_END_EXPAND(XOR);
+
+inline auto bitOpToStr(BitsOp op){
+   auto s = std::string{MR__ENUM_GET_NAMEq(BitsOp, op)};
+   if (s.empty()){
+      throw std::runtime_error("inconsistent gate-operation");
+   }
+   return s;
+}
+
+inline auto bitOpFromStr(const std::string& s){
+   auto [e, ok] = MR__ENUM_GET_VALUE(BitsOp, s);
+   if (ok) return e;
+   
+   throw std::runtime_error("inconsistent gate-operation");
+}
 
 NAoc__MR::TResult day24Part1(std::shared_ptr<std::istream> inputStream)
 {
@@ -17,11 +35,21 @@ NAoc__MR::TResult day24Part1(std::shared_ptr<std::istream> inputStream)
    std::unordered_map<std::string, std::pair<bool,bool> > wireValues; //ready-value
    using It = decltype(wireValues)::iterator;
 
-   enum class BitsOp {OR, AND, XOR};
-
    std::unordered_map<It, std::pair<BitsOp, std::pair<It,It>> > gatesConn;
 
    std::unordered_map<It, std::unordered_set<It>> gatesConnFw;
+
+   static const auto gateExtraction = [](const std::string& gate) -> std::vector<std::string> {
+      const auto forGate = split(gate, R"__(->)__", true);
+      if (forGate.size() != 2U) return std::vector<std::string>{};
+
+      const auto gateElems = split(forGate[0], R"__( )__", true);
+      if (gateElems.size() != 3U) return std::vector<std::string>{};
+
+      static_cast<void>(bitOpFromStr(gateElems[1])); // check
+
+      return std::vector{std::move(gateElems[0]), std::move(gateElems[1]), std::move(gateElems[2]), forGate[1]};
+   };
 
    while (true) {
       //  --- BEGIN LINE EXTRACTION ---
@@ -43,19 +71,28 @@ NAoc__MR::TResult day24Part1(std::shared_ptr<std::istream> inputStream)
       //  --- END LINE EXTRACTION ---
 
       //  --- BEGIN LINE CHECKS ---
-      if (auto it = std::find_if_not( line.cbegin(), line.cend(),
-                                      [](char ch){return true;} ) ; it != line.cend() ){
+      static_assert(__cplusplus > 202002L, "Use C++23 for std::string::contains, or disable the following line-check");
+
+      if (auto it = std::find_if_not( line.cbegin(), line.cend(), // needed C++23 for string::contains
+                                      [](char ch){return std::isalnum(ch) || (": ->"s.contains(ch));} ) ; it != line.cend() ){
          throw std::invalid_argument(msgLine + "unexpected char: " + std::string(1,*it));
       }
       //  --- END LINE CHECKS ---
 
       auto forWire = split(line, R"__(:)__", true);
       
-
       if (forWire.size() == 2){
-         wireValues[forWire[0]] = std::make_pair(true, !!getAllValues<TResult>(forWire[1])[0]);
+         auto values = getAllValues<TResult>(forWire[1]);
+         if ((values.size() != 1U) || (values[0] < 0U) || (values[0] > 1U)){
+            throw std::invalid_argument(msgLine + "unexpected part of wire value: '" + forWire[1] + "'");
+         }
+         wireValues[forWire[0]] = std::make_pair(true, !!values[0]);
       } else{
-         strGates.push_back(line);
+         if (gateExtraction(line).empty()){
+            throw std::invalid_argument(msgLine + "bad gate format");
+         }
+
+         strGates.push_back(std::move(line));
       }
    }
 
@@ -65,7 +102,7 @@ NAoc__MR::TResult day24Part1(std::shared_ptr<std::istream> inputStream)
    }
 
    for(const auto& strGate : strGates){
-      auto forGate = split(strGate, R"__(->)__", true);
+      const auto forGate = split(strGate, R"__(->)__", true);
 
       wireValues[forGate[1]] = std::make_pair(false, false); // not ready
    }
@@ -86,20 +123,13 @@ NAoc__MR::TResult day24Part1(std::shared_ptr<std::istream> inputStream)
    }
 
    for(const auto& strGate : strGates){
-      auto forGate = split(strGate, R"__(->)__", true);
+      auto gateAllElems = gateExtraction(strGate);
 
-      auto gateElems = split(forGate[0], R"__( )__", true);
+      BitsOp op = bitOpFromStr(gateAllElems[1]);
 
-      BitsOp op;
-      if (gateElems[1] == "XOR"){
-         op = BitsOp::XOR;
-      } else if (gateElems[1] == "AND"){
-         op = BitsOp::AND;
-      } else op = BitsOp::OR;
-
-      auto itOut = wireValues.find(forGate[1]);
-      auto itIn1 = wireValues.find(gateElems[0]);
-      auto itIn2 = wireValues.find(gateElems[2]);
+      auto itOut = wireValues.find(gateAllElems[3]);
+      auto itIn1 = wireValues.find(gateAllElems[0]);
+      auto itIn2 = wireValues.find(gateAllElems[2]);
 
       gatesConn[itOut] =
          std::make_pair(
@@ -156,8 +186,16 @@ NAoc__MR::TResult day24Part1(std::shared_ptr<std::istream> inputStream)
    std::sort(zNames.begin(), zNames.end());
 
    TResult res = 0U;
+   checkResultExtension<TResult>(allZ.size());
+   std::size_t i = 0;
    for(auto itName = zNames.rbegin(); itName != zNames.rend(); ++itName){
-      (res <<= 1) |= !!wireValues.find(*itName)->second.second;
+      const auto& name = *itName;
+      (res <<= 1) |= !!wireValues.find(name)->second.second;
+
+      auto val = getAllValues<std::size_t>(std::string_view{std::next(name.begin()), name.end()});
+      if ((val.size() != 1U) && (val[0] != zNames.size()-1U-i)){
+         throw std::invalid_argument("Missing soem intermediate 'z' wires");
+      }
    }
 
    std::cout << "\nNumber of lines: " << lineCount << std::endl;
