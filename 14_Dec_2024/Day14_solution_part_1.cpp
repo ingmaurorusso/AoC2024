@@ -71,11 +71,8 @@ NAoc__MR::TResult day14Part1(std::shared_ptr<std::istream> inputStream)
    for(auto& [k_, p_v] : posAndSpeedByRobot){
       auto& [p,v] = p_v;
 
-      if ( (std::max(v.x,v.y) > std::numeric_limits<CoordSign>::max()/times ) ||
-           (std::max(v.x,v.y)*times > std::numeric_limits<CoordSign>::max() - std::max(p.x,p.y)) ){
-         throw std::runtime_error("CoordSign to be wider");
-      }
-
+      checkProdResult(std::max(v.x,v.y), times);
+      checkProdResult(std::max(p.x,p.y), std::max(v.x,v.y)*times);
       p += (v*times);
 
       p.x %= X;

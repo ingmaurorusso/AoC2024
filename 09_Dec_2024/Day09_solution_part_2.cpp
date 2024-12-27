@@ -214,10 +214,7 @@ NAoc__MR::TResult day09Part2(std::shared_ptr<std::istream> inputStream)
 
             TSize add = (idNew * size + size*(size-1)/2) * idOrg;
 
-            if (sum > std::numeric_limits<TResult>::max() - add){
-               throw std::runtime_error("Type Tsize has to be wider");
-            }
-
+            checkSumResult(sum, add);
             sum += add;
          }
 

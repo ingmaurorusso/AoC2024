@@ -143,9 +143,7 @@ NAoc__MR::TResult day06Part2(std::shared_ptr<std::istream> inputStream)
 
       PositionsWithSource loopPositions{};
       if (!findPattern(field, guardPos, guardDir, loopPositions)){
-         if (countLoop == std::numeric_limits<TResult>::max()){
-            throw std::runtime_error("OVerflow, TResult size to be increased");
-         }
+         checkSumResult(countLoop,1U);
          ++countLoop;
       }
 

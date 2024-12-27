@@ -92,9 +92,9 @@ NAoc__MR::TResult day01Part2(std::shared_ptr<std::istream> inputStream)
             auto d2 = std::distance(it2, new_it2) + 1U;
             it2 = new_it2;
 
-            if (sum > std::numeric_limits<TResult>::max()/v1/d1/d2){
-                throw std::runtime_error("Overflow: TResult to extend");
-            }
+            checkProdResult(d1, d2);
+            checkProdResult(v1, d1*d2);
+            checkSumResult(sum, v1*d1*d2);
             sum += (v1*d1*d2);
         }
 

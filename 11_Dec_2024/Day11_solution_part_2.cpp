@@ -71,26 +71,21 @@ NAoc__MR::TResult day11Part2(std::shared_ptr<std::istream> inputStream)
 
                // if (v1 == v2) std::cout << "funny!\n";
 
+               // TODO: add checksumResult
                newValues[v1] += it->second;
                newValues[v2] += it->second;
             } else{
-               if (it->first > std::numeric_limits<TValue>::max()/2024){
-                  throw std::runtime_error("TValue needs to be a wider type");
-               }
-
+               checkProdResult(it->first, 2024);
+               // TODO: add checksumResult
                newValues[it->first * 2024] += it->second;
             }
          }
 
          values = std::move(newValues);
-
-         // mergeMapCombining( values, newValues, [](TTimes t1, Ttimes t2){return t1 + t2;} );
       }
 
       count = std::accumulate(values.cbegin(), values.cend(), TResult{0U}, [](auto acc, auto p){
-         if (acc > std::numeric_limits<decltype(acc)>::max() - p.second){
-            throw std::runtime_error("TValue needs to be a wider type");
-         }
+         checkSumResult(acc, p.second);
          return acc + p.second;
       });
    }

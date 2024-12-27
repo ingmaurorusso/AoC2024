@@ -67,9 +67,7 @@ NAoc__MR::TResult day11Part1(std::shared_ptr<std::istream> inputStream)
                *it = v1;
                it = values.insert(++it,v2); // 'it' on the new value
             } else{
-               if (*it > std::numeric_limits<TValue>::max()/2024){
-                  throw std::runtime_error("TValue needs to be a wider type");
-               }
+               checkProdResult(*it, 2024);
                *it *= 2024;
             }
          }

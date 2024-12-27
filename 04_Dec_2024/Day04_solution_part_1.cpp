@@ -98,18 +98,14 @@ NAoc__MR::TResult day04Part1(std::shared_ptr<std::istream> inputStream)
             }
 
             if (xmasCheck(i,j,dx,dy)){
-               if (count == std::numeric_limits<TResult>::max()){
-                  throw std::runtime_error("Overflow");
-               }
+               checkSumResult(count,1U);
                ++count;
             }
          }
 
          // vertical
          if (xmasCheck(i,j,0,1)){
-            if (count == std::numeric_limits<TResult>::max()){
-               throw std::runtime_error("Overflow");
-            }
+            checkSumResult(count,1U);
             ++count;
          }
       }

@@ -67,10 +67,7 @@ NAoc__MR::TResult day10Part2(std::shared_ptr<std::istream> inputStream)
                      return field[*itPoint] == '9';}
                  ).first;
 
-      if (sum > std::numeric_limits<TResult>::max() - add){
-         throw std::runtime_error("Overflow, TResult size to be wider");
-      }
-
+      checkSumResult(sum, add);
       sum += add;
    }
 

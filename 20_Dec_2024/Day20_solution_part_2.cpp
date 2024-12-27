@@ -95,10 +95,7 @@ NAoc__MR::TResult day20Part2(std::shared_ptr<std::istream> inputStream)
       bool existsStartToP1 = (it1S != distMapFromStart.end());
       bool existsEndFromP1 = (it1E != distMapToEnd.end());
 
-      if (!(existsStartToP1 || existsEndFromP1)){
-         distMapToEnd.end();
-         continue;
-      }
+      if (!(existsStartToP1 || existsEndFromP1)) continue;
 
       for(const auto& p2 : graph){
          if (p2 <= p1) continue; // avoid count twice

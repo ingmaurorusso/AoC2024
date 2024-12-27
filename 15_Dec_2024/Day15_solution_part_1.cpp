@@ -146,11 +146,11 @@ NAoc__MR::TResult day15Part1(std::shared_ptr<std::istream> inputStream)
    }
 
    for(auto box : boxes){
-      // TODO: add overflow check also for 'add' computation
-      auto add = box.x + 100*box.y;
-      if (sum > std::numeric_limits<TResult>::max()-add){
-         throw std::runtime_error("TResult to be wider");
-      }
+      checkProdResult(box.y, 100U);
+      checkSumResult(box.x, box.y*100U);
+      auto add = box.x + box.y*100U;
+
+      checkSumResult(sum, add);
       sum += add;
    }
 

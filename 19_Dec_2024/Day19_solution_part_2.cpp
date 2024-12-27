@@ -49,10 +49,7 @@ TResult checkStringSumIter( const std::string& line, std::map<std::string, std::
 
                if (alreadyKnownAfter > 0U){
                   for(std::size_t j = 0; j <= i; ++j){
-                     if ( countGoodAfter[partialBefore[j]] >
-                          std::numeric_limits<TResult>::max() - alreadyKnownAfter ){
-                        throw std::runtime_error("TResult to be wider");
-                     }
+                     checkSumResult( countGoodAfter[partialBefore[j]], alreadyKnownAfter );
                      countGoodAfter[partialBefore[j]] += alreadyKnownAfter;
                   }
                }
@@ -215,9 +212,8 @@ NAoc__MR::TResult day19Part2(std::shared_ptr<std::istream> inputStream)
                for(const auto& towel : towels){
                   if (residualLine.find(towel) == 0U){
                      const auto add = checkStringSumRec(std::string_view(std::next(residualLine.begin(),towel.size()), residualLine.end()));
-                     if (count > std::numeric_limits<TResult>::max() - add){
-                        throw std::runtime_error("TResult to be wider");
-                     }
+
+                     checkSumResult( count, add );
                      count += add;
                   }
                }
@@ -247,8 +243,6 @@ NAoc__MR::TResult day19Part2(std::shared_ptr<std::istream> inputStream)
    std::cout << "\nResult P2: " << count  << std::endl;
    std::cout << "\nn. bad: " << bad << std::endl;
    std::cout << "\nn. removed useless towels: " << nRemovedTowel << std::endl;
-
-   //TODO: check why without towel reduction we get 307 instead of 322 !
 
    std::cout << std::endl;
 

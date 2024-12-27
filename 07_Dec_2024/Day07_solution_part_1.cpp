@@ -119,10 +119,7 @@ NAoc__MR::TResult day07Part1(std::shared_ptr<std::istream> inputStream)
       if (okEq){
          ++count;
 
-         if (sum > std::numeric_limits<TResult>::max() - testValue){
-            throw std::runtime_error("Overflow, TResult size to be increased");
-         }
-
+         checkSumResult(sum, testValue);
          sum += testValue;
 
          /*

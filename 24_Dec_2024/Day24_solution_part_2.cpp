@@ -52,6 +52,7 @@ NAoc__MR::TResult day24Part2(std::shared_ptr<std::istream> inputStream)
       return std::vector{std::move(gateElems[0]), std::move(gateElems[1]), std::move(gateElems[2]), forGate[1]};
    };
 
+   bool firstEmptyLine = true;
    while (true) {
       //  --- BEGIN LINE EXTRACTION ---
       auto [line, lineStream, flags] = lineExtraction<MaxLineLength>(inputStream);
@@ -62,7 +63,10 @@ NAoc__MR::TResult day24Part2(std::shared_ptr<std::istream> inputStream)
          = "Input at the line n. " + std::to_string(++lineCount) + " : ";
 
       if (flags.emptyLine){
-         std::cout << msgLine << "WARNING: empty line\n";
+         if (!(firstEmptyLine && strGates.empty())){
+            std::cout << msgLine << "WARNING: empty line\n";
+         }
+         firstEmptyLine = false;
          continue;
       }
 

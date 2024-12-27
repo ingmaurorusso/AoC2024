@@ -219,16 +219,12 @@ NAoc__MR::TResult day21Part1(std::shared_ptr<std::istream> inputStream)
 
       auto codeVal = getAllValues<TResult>(code);
 
-      if (codeVal[0] > std::numeric_limits<TResult>::max()/seq.size()){
-         throw std::runtime_error("TResult to be wider");
-      }
+      checkProdResult(codeVal[0], seq.size());
       auto add = (codeVal[0] * seq.size());
 
       std::cout << code << " -> " << seq << std::endl;
 
-      if (sum > std::numeric_limits<TResult>::max() - add){
-         throw std::runtime_error("TResult to be wider");
-      }
+      checkSumResult(sum, add);
       sum += add;
    }
 

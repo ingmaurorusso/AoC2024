@@ -73,10 +73,8 @@ NAoc__MR::TResult day12Part1(std::shared_ptr<std::istream> inputStream)
             for (std::underlying_type_t<Direction4> d = 0; d < FourDir4; ++d){
                Point p2 = p;
 
-               if (perimeter == std::numeric_limits<decltype(perimeter)>::max()){
-                  // ... well, maybe 'perimeter' not to be increased
-                  throw std::runtime_error("Overflow");
-               }
+               checkSumResult(perimeter, 1U);
+               // ... well, maybe 'perimeter' would not have been increased.
 
                if (field.movePoint(p2,Direction4(d))){
                   if (field[p2] != ch){
@@ -88,10 +86,8 @@ NAoc__MR::TResult day12Part1(std::shared_ptr<std::istream> inputStream)
             }
          }
 
-         if (sum > std::numeric_limits<TResult>::max()/area/perimeter){
-            throw std::runtime_error("Overflow, TResult size to be increased");
-         }
-
+         checkProdResult(area, perimeter);
+         checkSumResult(sum, area*perimeter);
          sum += (area*perimeter);
          ++areaCount;
 

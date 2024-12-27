@@ -154,7 +154,7 @@ NAoc__MR::TResult day19Part1(std::shared_ptr<std::istream> inputStream)
 
    std::vector<std::string> lines;
    std::vector<std::string> towels;
-   std::map<std::string, std::size_t> towelsMap; //, towelsMapOrg
+   std::map<std::string, std::size_t> towelsMap;
    std::size_t maxTowelLen;
    std::size_t Ntow;
    std::size_t nRemovedTowel = 0U;
@@ -200,7 +200,6 @@ NAoc__MR::TResult day19Part1(std::shared_ptr<std::istream> inputStream)
             }
             towelsMap[towels[i]] = i;
          }
-         //towelsMapOrg = towelsMap;
 
          auto towelsMapRed = towelsMap;
 
@@ -271,8 +270,6 @@ NAoc__MR::TResult day19Part1(std::shared_ptr<std::istream> inputStream)
    std::cout << "\nResult P1: " << count  << std::endl;
    std::cout << "\nn. bad: " << bad << std::endl;
    std::cout << "\nn. removed useless towels: " << nRemovedTowel << std::endl;
-
-   //TODO: check why without towel reduction we get 307 instead of 322 !
 
    std::cout << std::endl;
 

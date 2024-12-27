@@ -410,10 +410,7 @@ NAoc__MR::TResult day13Part2(std::shared_ptr<std::istream> inputStream)
             throw std::runtime_error("TResult to be higher");
          }
 
-         if (count > std::numeric_limits<TResult>::max() - deltaPrice){
-            throw std::runtime_error("TResult to be higher");
-         }
-
+         checkSumResult(count, TResult(deltaPrice));
          count += TResult(deltaPrice);
          ++nPrizes;
       }

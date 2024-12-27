@@ -82,8 +82,9 @@ NAoc__MR::TResult day16Part1(std::shared_ptr<std::istream> inputStream)
                            auto dir2 = edge.second.second;
                            bool sameAxis = (dir4IsVertical(dir1) == dir4IsVertical(dir2));
                            return sameAxis ? 1U : 1001U; });
+   using GraphPD = decltype(graph);
 
-   std::unordered_set<decltype(graph)::Node> endNodes;
+   std::unordered_set<typename GraphPD::Node> endNodes;
 
    for(Dir4Under d = 0; d < FourDir4; ++d){
       auto dir = Direction4{d};
@@ -103,7 +104,7 @@ NAoc__MR::TResult day16Part1(std::shared_ptr<std::istream> inputStream)
 
    //endNodes.insert({PointUnsign{23,133}, Direction4::Right});
    //endNodes.insert({PointUnsign{23,132}, Direction4::Down});
-   auto [minPath, mapPaths_, ok] = graph.findMinPath({start, Direction4::Right}, true, endNodes, true );
+   auto [minPath, mapPaths_, ok] = graph.findMinPath(typename GraphPD::Node{start, Direction4::Right}, true, endNodes, true );
    //TODO: switch second parameter getPaths to false.
 
    std::cout << "Number of lines: " << lineCount << std::endl;

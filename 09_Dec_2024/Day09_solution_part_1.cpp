@@ -142,10 +142,7 @@ NAoc__MR::TResult day09Part1(std::shared_ptr<std::istream> inputStream)
          auto size = pair.second;
          auto add = (idNew * size + size*(size-1)/2) * idOrg;
 
-         if (sum > std::numeric_limits<TResult>::max() - add){
-            throw std::runtime_error("Type TResult has to be wider");
-         }
-
+         checkSumResult(sum, add);
          sum += add;
 
          idNew += size;

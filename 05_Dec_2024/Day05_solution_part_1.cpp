@@ -13,6 +13,7 @@ NAoc__MR::TResult day05Part1(std::shared_ptr<std::istream> inputStream)
    unsigned lineCount{0U};
 
    TResult sum{0U};
+   TResult nOrderedUpdates{0U};
 
    std::unordered_map<TNode, std::unordered_set<TNode> > predecessors;
 
@@ -128,6 +129,7 @@ NAoc__MR::TResult day05Part1(std::shared_ptr<std::istream> inputStream)
                throw std::runtime_error("Overflow: TResult size to be increased");
             }
             sum += add;
+            ++nOrderedUpdates;
          }
       } else{
          throw std::runtime_error(msgLine + "separator: " + std::string(1,ch));
@@ -140,6 +142,7 @@ NAoc__MR::TResult day05Part1(std::shared_ptr<std::istream> inputStream)
 
    std::cout << "Number of lines: " << lineCount << std::endl;
    std::cout << "\nResult P1: " << sum << std::endl;
+   std::cout << "\n n. ordered updates: " << nOrderedUpdates << std::endl;
    std::cout << std::endl;
 
    return sum;

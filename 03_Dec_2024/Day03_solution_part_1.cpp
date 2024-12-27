@@ -63,17 +63,12 @@ NAoc__MR::TResult day03Part1(std::shared_ptr<std::istream> inputStream)
                throw std::runtime_error(msgLine + "mul part out-of-range: " + std::string{mulExpr});
             }
 
-            if (prod > std::numeric_limits<TResult>::max()/v){
-               throw std::runtime_error("Overflow: TResult size not enough");
-            }
+            checkProdResult(prod,v);
             prod *= v;
             itVal++;
          }
 
-         if (sum > std::numeric_limits<TResult>::max() - prod){
-            throw std::runtime_error("Overflow: TResult size not enough");
-         }
-
+         checkSumResult(sum,prod);
          sum += prod;
       }
    }

@@ -86,9 +86,7 @@ NAoc__MR::TResult day04Part2(std::shared_ptr<std::istream> inputStream)
       for(CoordSign j = 1; j < ny-1; ++j)
          if ( (lines[j][i] == 'A') //speed-up
               && xmasPivotCheck(i,j) ){
-            if (count == std::numeric_limits<TResult>::max()){
-               throw std::runtime_error("Overflow");
-            }
+            checkSumResult(count,1U);
             ++count;
          }
 

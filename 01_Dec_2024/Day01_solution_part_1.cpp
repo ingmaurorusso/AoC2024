@@ -10,7 +10,7 @@ NAoc__MR::TResult day01Part1(std::shared_ptr<std::istream> inputStream)
 
     unsigned lineCount{0U};
 
-    std::list<unsigned long> l1, l2;
+    std::list<TResult> l1, l2;
 
     while (true) {
         //  --- BEGIN LINE EXTRACTION ---
@@ -67,9 +67,7 @@ NAoc__MR::TResult day01Part1(std::shared_ptr<std::istream> inputStream)
 
         auto diff = (v2 > v1)? (v2 - v1) : (v1 - v2);
 
-        if (sum > std::numeric_limits<TResult>::max() - diff){
-            throw std::runtime_error("Overflow: TResult to extend");
-        }
+        checkSumResult(sum,diff);
         sum += diff;
     }
 
