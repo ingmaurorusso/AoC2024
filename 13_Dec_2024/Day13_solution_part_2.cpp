@@ -6,16 +6,14 @@ using namespace NAoc__MR;
 
 using TCoordD = long double; // would work also with double (modfl -> modf)
 
-using Equation = std::array<TCoordD,3>; //TODO: VectorN
-struct System{
-   Equation eq1;
-   Equation eq2;
+using Equation2 = std::array<TCoordD,3>; //TODO: VectorN
+struct System2{
+   Equation2 eq1;
+   Equation2 eq2;
 };
 
 // prize multipliers
-constexpr Equation eqMin{3,1,0}; // last 0 does not matter.
-
-#define AGAINST_BUG
+constexpr Equation2 eqMin{3,1,0}; // last 0 does not matter.
 
 NAoc__MR::TResult day13Part2(std::shared_ptr<std::istream> inputStream)
 {
@@ -28,8 +26,8 @@ NAoc__MR::TResult day13Part2(std::shared_ptr<std::istream> inputStream)
    TResult nChangedPrizeForTooManyPressures = 0U;
    TResult nPrizes = 0U;
 
-   std::list<System> systems;
-   System currSys;
+   std::list<System2> systems;
+   System2 currSys;
    TResult nSystems = 0U;
 
    constexpr TCoordD Eps = 0.0000001;
@@ -122,11 +120,6 @@ NAoc__MR::TResult day13Part2(std::shared_ptr<std::istream> inputStream)
             currSys.eq1[2] = moveX + ADD_PRIZE_COORD;
             currSys.eq2[2] = moveY + ADD_PRIZE_COORD;
 
-#ifdef AGAINST_BUG
-            auto sys = currSys;
-#endif
-
-#ifndef AGAINST_BUG
             // buggy if no-move with long double
             // 1) calls its own initilizer when construct_at
             //    in stl_construct.h has the instruction
@@ -136,26 +129,24 @@ NAoc__MR::TResult day13Part2(std::shared_ptr<std::istream> inputStream)
             //    with 'double' it works correctly.
             systems.push_back(std::move(currSys));
             // 3) even with move, some other manifestation
-            // of problems (in other isntructions) during
+            // of problems (in other instructions) during
             // the memory management (corrupted list of memory areas).
          }
       }
    }
 
    for(auto sys : systems){
-#endif
+      constexpr unsigned MAX_PRESSURES = 0U; //unlimited
+      constexpr TCoordD ROUND = 0.0001;
 
-   constexpr unsigned MAX_PRESSURES = 0U; //unlimited
-   constexpr TCoordD ROUND = 0.0001;
+      using PointD = Point<TCoordD>;
 
-   using PointD = Point<TCoordD>;
-
-   const auto checkPressNumber = [](PointD p){
-      if constexpr(MAX_PRESSURES > 0){
-         return (p.x <= MAX_PRESSURES + ROUND) && (p.y <= MAX_PRESSURES + ROUND);
-      } //else:
-         return true;
-   };
+      const auto checkPressNumber = [](PointD p){
+         if constexpr(MAX_PRESSURES > 0){
+            return (p.x <= MAX_PRESSURES + ROUND) && (p.y <= MAX_PRESSURES + ROUND);
+         } //else:
+            return true;
+      };
 
       ++nSystems;
       SquareMatrix<2> matrix2 { {sys.eq1[0], sys.eq1[1]}, {sys.eq2[0], sys.eq2[1]} };
@@ -166,7 +157,7 @@ NAoc__MR::TResult day13Part2(std::shared_ptr<std::istream> inputStream)
       TResult maxSys = std::max(sys.eq1[2], sys.eq2[2]);
 
       if ( (sys.eq1[2] < std::max(sys.eq1[0],sys.eq1[1])) ||
-           (sys.eq2[2] < std::max(sys.eq2[0],sys.eq2[1])) ){
+         (sys.eq2[2] < std::max(sys.eq2[0],sys.eq2[1])) ){
          continue;
       }
 
@@ -209,7 +200,7 @@ NAoc__MR::TResult day13Part2(std::shared_ptr<std::istream> inputStream)
 
          TCoordD integerPart;
          if ( (pInters.x >= 0) && (pInters.y >= 0) &&
-              (modfl(pInters.x+ROUND/2.,&integerPart) < ROUND) && (modfl(pInters.y+ROUND/2.,&integerPart) < ROUND) ){
+            (modfl(pInters.x+ROUND/2.,&integerPart) < ROUND) && (modfl(pInters.y+ROUND/2.,&integerPart) < ROUND) ){
             if (checkPressNumber(pInters)){
                bestPoint = pInters;
                foundPoint = true;
@@ -416,11 +407,6 @@ NAoc__MR::TResult day13Part2(std::shared_ptr<std::istream> inputStream)
       }
    }
 
-#ifdef AGAINST_BUG
-         }
-      }
-#endif
-
    if (buttonA || buttonB){
       throw std::invalid_argument("Missing prize part at the end");
    }
@@ -428,8 +414,8 @@ NAoc__MR::TResult day13Part2(std::shared_ptr<std::istream> inputStream)
    std::cout << "Number of lines: " << lineCount << std::endl;
    std::cout << "Number of systems: " << nSystems << std::endl;
    std::cout << "Number of prizes: " << nPrizes << std::endl;
-   std::cout << "Number of prizes discarded for too many pressues: " << nTooManyPressures << std::endl;
-   std::cout << "Number of prizes changed for too many pressues: " << nChangedPrizeForTooManyPressures << std::endl;
+   std::cout << "Number of prizes discarded for too many pressures: " << nTooManyPressures << std::endl;
+   std::cout << "Number of prizes changed for too many pressures: " << nChangedPrizeForTooManyPressures << std::endl;
    std::cout << "\nResult P2: " << count << std::endl;
    std::cout << std::endl;
 

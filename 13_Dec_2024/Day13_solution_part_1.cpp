@@ -371,7 +371,7 @@ NAoc__MR::TResult day13Part1(std::shared_ptr<std::istream> inputStream)
    std::cout << "Number of lines: " << lineCount << std::endl;
    std::cout << "Number of systems: " << systems.size() << std::endl;
    std::cout << "Number of prizes: " << nPrizes << std::endl;
-   std::cout << "Number of prizes discarded for too many pressues: " << nTooManyPressures << std::endl;
+   std::cout << "Number of prizes discarded for too many pressures: " << nTooManyPressures << std::endl;
    std::cout << "\nResult P1: " << count << std::endl;
    std::cout << std::endl;
 
