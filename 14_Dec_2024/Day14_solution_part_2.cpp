@@ -219,7 +219,6 @@ NAoc__MR::TResult day14Part2(std::shared_ptr<std::istream> inputStream)
       constexpr unsigned VisualY = 50;
       auto itMax = std::max_element(vDensity.begin(), vDensity.end());
       auto max = *itMax;
-      auto distForMax = std::distance(vDensity.begin(),itMax);
       if (max > VisualY){
          for(auto &d : vDensity){
             d /= (max / VisualY);
@@ -300,7 +299,6 @@ NAoc__MR::TResult day14Part2(std::shared_ptr<std::istream> inputStream)
       constexpr unsigned VisualY = 50;
       auto itMax = std::max_element(vDensity.begin(), vDensity.end());
       auto max = *itMax;
-      auto distForMax = std::distance(vDensity.begin(),itMax);
       if (max > VisualY){
          for(auto &d : vDensity){
             d /= (max / VisualY);

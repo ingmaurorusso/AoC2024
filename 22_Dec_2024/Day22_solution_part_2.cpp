@@ -73,6 +73,10 @@ NAoc__MR::TResult day22Part2(std::shared_ptr<std::istream> inputStream)
    for(const auto& line : lines){
       auto secret = getAllValues<TResult>(line)[0];
 
+      // might use a representative index for the vector of last 4 changes,
+      // in order to simplify keys management: 2 decimal digits for each change-index,
+      // and +10 if corresponding change is negative (values from 0 to 19, 10 excluded).
+      // This was done in the Python implementation.
       std::map<VectorNSign<4>, TResult> buyerBananas;
 
       std::array<int,NSeq> changes;

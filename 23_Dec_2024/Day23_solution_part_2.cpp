@@ -51,63 +51,6 @@ NAoc__MR::TResult day23Part2(std::shared_ptr<std::istream> inputStream)
       graph << GraphPC::Edge{cps[0],cps[1]};
    }
 
-
-   /*
-   std::size_t best = 0U;;
-   GraphPC::NodeSetRef bestClique;
-
-   GraphPC::NodeSetRef alreadyVisited;
-
-   for(const auto& pc : graph){
-      auto pcIt = graph.refNode(pc);
-
-      auto connected = graph.edgeSetFrom(pc);
-
-      // speed-up not to consider the nodes already visited.
-      //TODO: implement as https://www.sciencedirect.com/science/article/pii/S0166218X01002906
-      for(auto itC = connected.begin(); itC != connected.end();){
-         if (alreadyVisited.contains(itC->second)){
-            itC = connected.erase(itC);
-         } else ++itC;
-      }
-
-      std::size_t ub = connected.size()+1U;
-
-      std::unordered_set<GraphPC::NodeIt> bestCliqueForPc;
-
-      for(const auto pc1eIt : connected){
-         if (ub <= best){
-            break; // speed-up, useless to continue
-         }
-
-         bool ok = true;
-         for(auto cliquePcIt : bestCliqueForPc){
-            if (!graph.edgeExists(pc1eIt.second, cliquePcIt)){
-               ok = false;
-               --ub;
-               break;
-            }
-         }
-
-         if (ok){
-            bestCliqueForPc.insert(pc1eIt.second);
-         }
-      }
-
-      bestCliqueForPc.insert(pcIt); // can be done at the end, it's faster not to check for it
-      alreadyVisited.insert(pcIt);
-
-      if (bestCliqueForPc.size() > best){
-         best = bestCliqueForPc.size();
-
-         bestClique.clear();
-         for(auto pcIt : bestCliqueForPc){
-            bestClique.insert(pcIt);
-         }
-      }
-   }
-   */
-
    auto bestClique = graph.getMaxClique();
 
    std::vector<std::string> pcs;

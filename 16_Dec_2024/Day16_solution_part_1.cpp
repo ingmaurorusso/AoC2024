@@ -91,21 +91,10 @@ NAoc__MR::TResult day16Part1(std::shared_ptr<std::istream> inputStream)
 
       endNodes.insert({end,dir});
    }
-   
-   /*graph.edgeSetFrom({PointUnsign(7,5),Direction4::Right}); // TODO: remove
-   graph.edgeSetTo({PointUnsign(7,5),Direction4::Right}); // TODO: remove
 
-   graph.implode( endNodes,
-      [&graph](){
-         if (graph.edgeSetTo({PointUnsign(7,5),Direction4::Right}).empty()){
-            throw 0;
-         }
-      } );*/
+   graph.implode(endNodes);
 
-   //endNodes.insert({PointUnsign{23,133}, Direction4::Right});
-   //endNodes.insert({PointUnsign{23,132}, Direction4::Down});
-   auto [minPath, mapPaths_, ok] = graph.findMinPath(typename GraphPD::Node{start, Direction4::Right}, true, endNodes, true );
-   //TODO: switch second parameter getPaths to false.
+   auto [minPath, mapPaths_, ok] = graph.findMinPath(typename GraphPD::Node{start, Direction4::Right}, false, endNodes, true );
 
    std::cout << "Number of lines: " << lineCount << std::endl;
    std::cout << "\nResult P1: " << minPath << std::endl;
