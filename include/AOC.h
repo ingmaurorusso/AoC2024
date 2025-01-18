@@ -30,6 +30,7 @@
 #include <utility>
 #include <vector>
 
+
 #include "algebra_custom__MR.h"
 using namespace NAlgebra__MR;
 
@@ -56,6 +57,11 @@ using namespace NSpace__MR;
 
 #include "string_custom_MR.h"
 using namespace NString__MR;
+
+// MUST BE AT THE END, due to its operator<< related
+// to iterables not already printable.
+#include "z_print_custom_MR.h"
+using namespace NPrint__MR;
 
 #define HEAD_FILE Day
 
@@ -361,13 +367,3 @@ inline bool operator<(const It& it1, const It& it2){
     // see: https://stackoverflow.com/questions/43996394/how-to-implement-less-than-operator-for-random-access-iterator
 }
 */
-
-// only iterables not already printable -> that's the motivation to be at the end of AOC.h that
-// includes all other header files.
-template<NConcept__MR::Iterable Iter>
-requires (!requires(std::ostream os, Iter iter){os << iter;})
-auto& operator<<(std::ostream &os, const Iter& iter) noexcept{
-    NString__MR::printIterableOnStream(os, iter, "(", ",", ")");
-
-    return os;
-}

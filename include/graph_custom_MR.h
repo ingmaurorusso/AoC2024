@@ -17,7 +17,7 @@
 #include "concept_custom_MR.h"
 #include "container_custom_MR.h"
 #include "hash_custom_MR.h" // for the hash on pairs / iterators
-#include "string_custom_MR.h" // for the hash on pairs
+#include "string_custom_MR.h"
 
 namespace NGraph__MR{
   using NodeOrder = std::size_t;
