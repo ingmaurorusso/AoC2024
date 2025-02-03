@@ -20,6 +20,7 @@
 
 namespace NEnum__MR{
 
+  // TODO: in C++23 std::to_underlying exists.
   template<typename E>
   constexpr auto toUnderlying(const E e) noexcept
   {

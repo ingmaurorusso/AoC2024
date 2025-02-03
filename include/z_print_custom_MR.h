@@ -17,15 +17,47 @@ template<NConcept__MR::Iterable Iter>
 requires (!requires(std::ostream os, Iter iter){os << iter;})
 std::ostream& operator<<(std::ostream &os, const Iter& iter) noexcept;
 
-// forward declaration, aimed at nest any level of iterators and iterables.
-// This will be able to 'see' the operator above, in case here there is an
-// iterator referring to objects that, in turn, are iterable containers.
-template<typename ReferSomething> requires
-requires(std::ostream os, ReferSomething rf){os << *rf;}
-&& (!requires(std::ostream os, ReferSomething rf){os << rf;}) // if not already printable
-std::ostream& operator<<(std::ostream &os, const ReferSomething& rf) noexcept;
+#define GENERAL_SOLUTION
+//#undef GENERAL_SOLUTION
+
+#ifndef GENERAL_SOLUTION
+
+ // forward declaration, aimed at nest any level of iterators and iterables.
+ // This will be able to 'see' the operator above, in case here there is an
+ // iterator referring to objects that, in turn, are iterable containers.
+ // This solution only supports iterables of iterables, so that iterators for
+ // each iterable refer to iterables, but it does not work if an iterable contains
+ // iterators as elements so that the iterator (e.g. begin()) refers to another
+ // iterator.
+ template<typename ReferSomething> requires
+ requires(std::ostream os, ReferSomething rf){os << *rf;}
+ && (!requires(std::ostream os, ReferSomething rf){os << rf;}) // if not already printable
+ std::ostream& operator<<(std::ostream &os, const ReferSomething& rf) noexcept;*
+
+#else
+
+ // forward declaration, aimed at nest any level of iterators and iterables.
+ // This will be able to 'see' the operator above, in case here there is an
+ // iterator referring to objects that, in turn, are iterable containers.
+ template<typename ReferSomething> requires
+ NConcept__MR::CPrintRefAny<ReferSomething>
+ && (!NConcept__MR::CPrintRefN<0,ReferSomething>) // if not already printable
+ std::ostream& operator<<(std::ostream &os, const ReferSomething& rf) noexcept;
+#endif
 
 namespace NPrint__MR{
+  #ifdef GENERAL_SOLUTION
+    template<typename ReferSomething>
+    requires requires(ReferSomething rf){requires NConcept__MR::CPrintRefAny<ReferSomething>;}
+    auto& printDerefOnStream(std::ostream& ostream, const ReferSomething& ref){
+        if constexpr(requires(std::ostream os, ReferSomething rf){os << rf;}){
+            return ostream << ref;
+        } else{
+            return printDerefOnStream(ostream,*ref);
+        }
+    }
+  #endif
+
     template<NConcept__MR::Iterable Iter, typename ElemPrinter>
     requires requires(std::ostream ostream, Iter iter, ElemPrinter&& elemPrinter)
              {elemPrinter( ostream, *(std::begin(iter)) );}
@@ -141,9 +173,22 @@ std::ostream& operator<<(std::ostream &os, const Iter& iter) noexcept{
     return os;
 }
 
-template<typename ReferSomething> requires
-requires(std::ostream os, ReferSomething rf){os << *rf;}
-&& (!requires(std::ostream os, ReferSomething rf){os << rf;}) // if not already printable
-std::ostream& operator<<(std::ostream &os, const ReferSomething& rf) noexcept{
-    return os << *rf;
-}
+#ifndef GENERAL_SOLUTION
+
+ template<typename ReferSomething> requires
+ requires(std::ostream os, ReferSomething rf){os << *rf;}
+ && (!requires(std::ostream os, ReferSomething rf){os << rf;}) // if not already printable
+ std::ostream& operator<<(std::ostream &os, const ReferSomething& rf) noexcept{
+     return os << *rf;
+ }
+
+#else
+
+ template<typename ReferSomething> requires
+ NConcept__MR::CPrintRefAny<ReferSomething>
+ && (!NConcept__MR::CPrintRefN<0,ReferSomething>) // if not already printable
+ std::ostream& operator<<(std::ostream &os, const ReferSomething& rf) noexcept{
+     return NPrint__MR::printDerefOnStream(os,*rf);
+ }
+
+#endif

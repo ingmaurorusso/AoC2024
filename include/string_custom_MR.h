@@ -81,10 +81,9 @@ namespace NString__MR{
         };
 
         /* by Vincenzo Simone @ Luxoft [except the extension with the the ternay operator for iterables]
-        original by @Vincenzo
-        // check print in C++23.
+        check print in C++23.
         ostream << std::forward<First>(first);
-        // ( (ostream << separator << std::forward<Args>(args)), ...  ); */
+        ( (ostream << separator << std::forward<Args>(args)), ...  ); */
 
         lPrintOnStream(std::forward<First>(first));
         ( lPrintOnStream(std::forward<Args>(args)), ...  );
@@ -270,7 +269,7 @@ namespace NString__MR{
         return res;
     }
 
-    // Remember to escap chars that are special for regex.
+    // Remember to escape chars that are special for regex.
     inline void stringReplaceRgx(std::string &str, const std::string& removeRgx, const std::string& addClassic){
         //from: https://stackoverflow.com/questions/75742782/how-to-use-c-stdranges-to-replace-substring-in-string
         // TODO: use simpler solution there in C++23

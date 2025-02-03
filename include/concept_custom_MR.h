@@ -63,6 +63,33 @@ namespace NConcept__MR{
                             }();
 
 
+    template <std::size_t N, typename ReferSomething>
+    struct print_trait_N : std::false_type { };
+
+    template <std::size_t N, typename ReferSomething>
+    requires ((N == 0) && requires(std::ostream os, ReferSomething rf){os << rf;})
+             || requires(ReferSomething rf){*rf; requires print_trait_N<N-1,decltype(*rf)>::value;}
+    struct print_trait_N<N,ReferSomething> : std::true_type { };
+
+    // concepts cannot be recursive, but traits can:
+    // https://stackoverflow.com/questions/56741456/how-to-define-a-recursive-concept
+    template<unsigned N, typename ReferSomething>
+    concept CPrintRefN = print_trait_N<N,ReferSomething>::value;
+
+    template <typename ReferSomething>
+    struct print_trait_any : std::false_type { };
+
+    template <typename ReferSomething>
+    requires requires(std::ostream os, ReferSomething rf){os << rf;}
+             || requires(ReferSomething rf){*rf; requires print_trait_any<decltype(*rf)>::value;}
+    struct print_trait_any<ReferSomething> : std::true_type { };
+
+    // concepts cannot be recursive, but traits can:
+    // https://stackoverflow.com/questions/56741456/how-to-define-a-recursive-concept
+    template<typename ReferSomething>
+    concept CPrintRefAny = print_trait_any<ReferSomething>::value;
+
+
     // copied from https://en.cppreference.com/w/cpp/language/constraints
     template<typename T>
     concept Hashable = requires(T a)
